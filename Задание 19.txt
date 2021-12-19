@@ -1,0 +1,94 @@
+Подготовка данных: 
+
+Чек 1:
+INSERT INTO anp.t_sqlt_txn
+SELECT 
+	'2019-01-08', 
+	'09:05:06', 
+	1298314, 
+	unnest(array[16826427, 16790159, 16782913]), 
+	8, 
+	unnest(array[1, 2, 3]),
+	unnest(array[300, 200, 150]);
+
+Чек 2:
+INSERT INTO anp.t_sqlt_txn
+SELECT 
+	'2019-01-19', 
+	'19:20:34', 
+	1298314, 
+	unnest(array[16393825, 16550624, 16668865, 16710822]), 
+	87, 
+	unnest(array[2, 2, 4, 1]),
+	unnest(array[120, 240, 800, 30]);
+
+Чек 3 (тот же перечень, что в чеке 2):
+INSERT INTO anp.t_sqlt_txn
+SELECT 
+	'2019-01-21', 
+	'14:20:07', 
+	1298314, 
+	unnest(array[16393825, 16550624, 16668865, 16710822]), 
+	44, 
+	unnest(array[2, 2, 4, 1]),
+	unnest(array[120, 240, 800, 30]);
+
+Чек 4 (тот же перечень, что в чеке 1):
+INSERT INTO anp.t_sqlt_txn
+SELECT 
+	'2019-01-23', 
+	'11:05:01', 
+	1298314, 
+	unnest(array[16826427, 16790159, 16782913]), 
+	20, 
+	unnest(array[1, 2, 2]),
+	unnest(array[300, 200, 150]);
+
+
+
+Решение:
+
+-- Определите самый популярный чек (состав чека) за январь 2019 года
+-- На выходе необходим список названий товаров, содержащихся в этом чеке
+-- Если популярных чеков несколько, то выбрать чек с наибольшей суммарной выручкой за весь период
+-- Данные отсортировать по возрастанию поля Название товара
+
+with sorted_frequent_checks as
+(
+with frequent_checks as 
+(
+SELECT txn, COUNT(txn) as txn_count, max(txn_id) as txn_id
+FROM (
+
+	SELECT array_agg(art_id) as txn, MAX(day_id) as date, txn_id
+	FROM 
+		(SELECT art_id, txn_id, day_id
+		FROM anp.t_sqlt_txn
+		WHERE day_id BETWEEN '01-01-2019' AND '31-01-2019'
+		ORDER BY txn_id, art_id ) as al1
+	GROUP BY TXN_ID
+) checks 
+GROUP BY DISTINCT(txn)
+)
+SELECT anp.t_sqlt_art.name, txn_count, sum(pr.price) as sum_price
+FROM (
+	SELECT unnest(txn) as item_id, txn_count, txn_id
+	FROM frequent_checks ) as check_items
+JOIN anp.t_sqlt_art ON item_id = anp.t_sqlt_art.art_id
+
+-- JOIN TXN table to see summary sales on every check
+JOIN (SELECT anp.t_sqlt_txn.PRICE as price, anp.t_sqlt_txn.txn_id as id
+  FROM anp.t_sqlt_txn 
+  JOIN frequent_checks ON frequent_checks.txn_id = anp.t_sqlt_txn.txn_id) pr 
+  on check_items.txn_id = pr.id
+
+
+
+WHERE txn_count = (SELECT max(txn_count) FROM frequent_checks)
+GROUP BY name, txn_count
+ORDER BY sum_price DESC, anp.t_sqlt_art.name DESC
+)
+SELECT name
+FROM sorted_frequent_checks
+WHERE sum_price = (SELECT max(sum_price) FROM sorted_frequent_checks)
+ORDER BY name DESC

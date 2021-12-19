@@ -1,0 +1,5 @@
+-- PSQL Tool --
+\COPY ANP.T_SQLT_ART FROM '<path_to_working_folder>\Data\T_SQLT_ART.csv' DELIMITER ',' CSV;
+\COPY ANP.T_SQLT_SALES FROM '<path_to_working_folder>\Data\T_SQLT_SALES.csv' DELIMITER ',' CSV;
+\COPY ANP.T_SQLT_REST FROM '<path_to_working_folder>\Data\T_SQLT_REST.csv' DELIMITER ',' CSV;
+\COPY ANP.T_SQLT_TXN FROM '<path_to_working_folder>\Data\T_SQLT_TXN.csv' DELIMITER ',' CSV;

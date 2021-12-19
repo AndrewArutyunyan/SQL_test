@@ -1,0 +1,21 @@
+-- Вывести средний/минимальный/максимальный вес товара 
+-- для каждой ГР21.
+-- Данные отсортировать по возрастанию полей ГР20-ГР21.
+-- Результаты округлить до 2х знаков после запятой.
+SELECT
+	ART_GRP_LVL_0_ID,
+	ART_GRP_LVL_1_ID, 
+	mean_weight,
+	min_weight,
+	max_weight
+FROM
+	(SELECT 
+		round(AVG(WEIGTH)::numeric,2) as mean_weight, 
+		round(MIN(WEIGTH)::numeric,2) as min_weight, 
+		round(MAX(WEIGTH)::numeric,2) as max_weight,
+		MAX(ART_GRP_LVL_0_ID) as ART_GRP_LVL_0_ID,
+		ART_GRP_LVL_1_ID
+	FROM anp.t_sqlt_art
+	GROUP BY ART_GRP_LVL_1_ID) AS unordered_data
+ORDER BY ART_GRP_LVL_0_ID, ART_GRP_LVL_1_ID
+

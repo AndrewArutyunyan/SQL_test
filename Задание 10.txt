@@ -1,0 +1,19 @@
+-- Выведите 5 ГР21, имеющих наибольшую доходность(Выручка, руб - Себестоимость, руб) за весь период.
+-- Для полученных групп выведите остатки в рублях на 30 июня 2019 г. и 30 июня 2018 г.
+-- Данные отсортировать по убыванию значения доходности.
+
+SELECT 
+	ART_GRP_LVL_0_NAME, 
+	ART_GRP_LVL_1_NAME, 
+	SUM(ANP.T_SQLT_SALES.SALE)-SUM(ANP.T_SQLT_SALES.SALE_COGS) as profit,
+	SUM(rest_19.REST_CP) as rest_on_2019,
+	SUM(rest_18.REST_CP) as rest_on_2018
+FROM ANP.T_SQLT_ART
+JOIN ANP.T_SQLT_SALES ON ANP.T_SQLT_ART.ART_ID = ANP.T_SQLT_SALES.ART_ID
+LEFT JOIN ANP.T_SQLT_REST AS rest_19 ON ANP.T_SQLT_ART.ART_ID = rest_19.ART_ID
+								AND rest_19.DAY_ID = '30-06-2019'
+LEFT JOIN ANP.T_SQLT_REST AS rest_18 ON ANP.T_SQLT_ART.ART_ID = rest_19.ART_ID
+								AND rest_19.DAY_ID = '30-06-2018'
+
+GROUP BY ART_GRP_LVL_0_NAME, ART_GRP_LVL_1_NAME
+ORDER BY profit DESC

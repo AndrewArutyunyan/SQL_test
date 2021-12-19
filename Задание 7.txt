@@ -1,0 +1,7 @@
+-- Определить среднюю плотность(кг/л) товаров из справочника товаров.
+-- Результат округлить до 2х знаков после запятой.
+
+SELECT round(AVG(density::numeric),2)
+FROM
+	(SELECT WEIGTH/VOL_TRANSP AS density
+	 FROM anp.t_sqlt_art) AS density_list

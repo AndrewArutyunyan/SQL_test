@@ -1,0 +1,8 @@
+-- Вывести Кол-во записей в справочнике товаров, удовлетворяющих следующим условиям:
+-- вес единицы товара кратен 1 кг 
+-- и находится в диапазоне от 1 до 3х кг 
+-- и объем единицы товара в диапазоне от 3х до 5и литров.
+SELECT VOL_TRANSP, WEIGTH FROM anp.t_sqlt_art
+WHERE CAST(WEIGTH AS INT)=WEIGTH
+AND WEIGTH BETWEEN 1 AND 3
+AND VOL_TRANSP BETWEEN 3 AND 5

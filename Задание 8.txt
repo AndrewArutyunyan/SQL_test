@@ -1,0 +1,15 @@
+-- Выведите максимальный, средний и минимальный объём товаров из справочника товаров 
+-- тремя разными строчками, 
+-- отсортировав по убыванию.
+
+SELECT max as vol
+FROM
+(SELECT MAX(VOL_TRANSP)
+FROM anp.t_sqlt_art
+UNION
+SELECT AVG(VOL_TRANSP)
+FROM anp.t_sqlt_art
+UNION
+SELECT MIN(VOL_TRANSP)
+FROM anp.t_sqlt_art) as vol_vals
+ORDER BY vol DESC

@@ -1,0 +1,13 @@
+-- Вывести список товаров из ГР22 - Сливки, 
+-- которые поместятся в мешок объемом 1 литр.
+-- Для позиций из списка нужно рассчитать, сколько целых товаров поместится в этот мешок.
+-- Данные отсортировать по возрастанию поля Название товара.
+
+
+SELECT name, num_items_in_bag
+FROM
+	(SELECT name, floor(1/VOL_TRANSP::numeric) AS num_items_in_bag
+	 FROM anp.t_sqlt_art
+	 WHERE ART_GRP_LVL_2_NAME = 'Сливки') AS unfiltered_data
+WHERE num_items_in_bag >= 1
+ORDER BY name;

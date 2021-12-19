@@ -1,0 +1,9 @@
+-- Выведите 5 товаров, набравших наибольшую суммарную выручку за 2018 год
+-- Данные отсортировать по убыванию значения суммарной выручки
+
+SELECT ANP.T_SQLT_ART.NAME, max(ANP.T_SQLT_ART.ART_GRP_LVL_0_NAME) as LVL_0_NAME, SUM(ANP.T_SQLT_SALES.SALE)
+FROM ANP.T_SQLT_SALES
+LEFT JOIN ANP.T_SQLT_ART ON ANP.T_SQLT_SALES.ART_ID = ANP.T_SQLT_ART.ART_ID
+WHERE ANP.T_SQLT_SALES.DAY_ID BETWEEN '01-01-2018' AND '31-12-2018'
+GROUP BY ANP.T_SQLT_ART.NAME
+ORDER BY SUM DESC
