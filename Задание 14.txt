@@ -1,0 +1,22 @@
+-- Вывести в детализации дней за 2018 год суммарный оборот в рублях, 
+-- количество чеков, средний чек в рублях, вес остатков в тоннах. 
+-- Дополнительно добавить долю оборота в рублях от предшествующей даты.
+-- Вывод отсортировать в порядке возрастания по дням.
+
+WITH checks AS (
+	SELECT day_id, txn_id, sum(price) as txn_price
+	FROM anp.t_sqlt_txn
+	GROUP BY txn_id, day_id)
+SELECT 
+	s.day_id, 
+	sum(s.sale) as sum_sale, 
+	count(checks.txn_id) as num_checks, 
+	avg(checks.txn_price) as mean_check, 
+	sum(r.rest_qnty)*sum(ar.weigth)/1000 as rest_weigth,
+	round(100*sum(s.sale)/lag(sum(s.sale), 1) OVER(ORDER BY s.day_id),2)
+FROM anp.t_sqlt_sales as s
+LEFT JOIN checks on checks.day_id = s.day_id 
+LEFT JOIN anp.t_sqlt_rest as r on r.day_id = s.day_id 
+LEFT JOIN anp.t_sqlt_art as ar on ar.art_id = r.art_id 
+GROUP BY s.day_id
+ORDER BY s.day_id ASC

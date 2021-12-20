@@ -1,0 +1,12 @@
+-- Вывести список названий товаров из справочника, 
+-- которых нет в таблице с остатками за 20 января 2018 года. 
+-- Дополнительно добавить отдельными столбцами объем продаж этих товаров
+-- за 2019 год в штуках и в литрах.
+
+SELECT name, sum(anp.t_sqlt_sales.sale_qnty) as qnty, sum(anp.t_sqlt_sales.sale_qnty)*vol_transp as vol_amount
+FROM anp.t_sqlt_art
+LEFT JOIN anp.t_sqlt_rest ON anp.t_sqlt_rest.art_id = anp.t_sqlt_art.art_id
+LEFT JOIN anp.t_sqlt_sales ON anp.t_sqlt_sales.art_id = anp.t_sqlt_art.art_id
+WHERE anp.t_sqlt_art.art_id NOT IN (SELECT art_id FROM anp.t_sqlt_rest WHERE day_id = '20-01-2018')
+AND anp.t_sqlt_sales.day_id BETWEEN '01-01-2019' AND '31-12-2019'
+GROUP BY name, vol_transp

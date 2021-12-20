@@ -1,0 +1,44 @@
+-- Определить топ 10 товаров по весу в килограммах за декабрь 2019 года 
+-- и найти оборот по каждому их них за декабрь 2019 года и декабрь 2018 года.
+-- Вывести по каждому из найденных товаров название, обороты за оба года 
+-- и отношение оборота 2019 года к 2018 году в процентах 
+-- с округлением до 2-х знаков после запятой.
+-- Отсортировать результат по убыванию оборота в рублях за 2019 год
+
+WITH max_weigth as (
+	SELECT 
+		ANP.T_SQLT_SALES.ART_ID,
+		ANP.T_SQLT_ART.NAME as name,
+		ANP.T_SQLT_SALES.SALE,
+		ANP.T_SQLT_ART.WEIGTH as weigth
+	FROM ANP.T_SQLT_SALES
+	LEFT JOIN ANP.T_SQLT_ART ON ANP.T_SQLT_ART.ART_ID = ANP.T_SQLT_SALES.ART_ID
+	WHERE DAY_ID BETWEEN '01-12-2019' AND '31-12-2019'
+	ORDER BY weigth DESC
+	LIMIT 10 ), 
+
+dec_2019 as (
+	SELECT sum(ANP.T_SQLT_SALES.SALE) as sales_dec_2019, max_weigth.art_id
+	FROM ANP.T_SQLT_SALES
+	JOIN max_weigth ON ANP.T_SQLT_SALES.ART_ID = max_weigth.art_id
+	WHERE ANP.T_SQLT_SALES.ART_ID = max_weigth.art_id 
+	AND ANP.T_SQLT_SALES.DAY_ID BETWEEN '01-12-2019' AND '31-12-2019' 
+	GROUP BY max_weigth.art_id ),
+
+dec_2018 as (
+	SELECT sum(ANP.T_SQLT_SALES.SALE) as sales_dec_2018, max_weigth.art_id
+	FROM ANP.T_SQLT_SALES
+	JOIN max_weigth ON ANP.T_SQLT_SALES.ART_ID = max_weigth.art_id
+	WHERE ANP.T_SQLT_SALES.ART_ID = max_weigth.art_id 
+	AND ANP.T_SQLT_SALES.DAY_ID BETWEEN '01-12-2018' AND '31-12-2018' 
+	GROUP BY max_weigth.art_id )
+
+SELECT 
+	max_weigth.name as name,
+    sales_dec_2019,
+   	sales_dec_2018,
+	round(sales_dec_2019/sales_dec_2018*100, 2) as "relation, %" 
+FROM max_weigth
+LEFT JOIN dec_2019 ON dec_2019.art_id=max_weigth.art_id
+LEFT JOIN dec_2018 ON dec_2018.art_id=max_weigth.art_id
+ORDER BY sales_dec_2019 DESC

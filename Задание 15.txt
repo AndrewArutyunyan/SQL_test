@@ -1,0 +1,33 @@
+-- Вывести в детализации ГР21 отдельными столбцами количество чеков за 2017, 2018, 2019 
+-- и их долю от общего кол-ва чеков за 3 года 2017-2019 гг. (в процентах с округлением до целого).
+
+SELECT 
+	ar.art_grp_lvl_1_name,
+	count(txn17.txn_id) as txn_2017,
+	count(txn18.txn_id) as txn_2018,
+	count(txn19.txn_id) as txn_2019,
+	CASE WHEN sum(count(txn17.txn_id)) OVER () = 0 THEN NULL 
+	ELSE round(100*count(txn17.txn_id) / sum(count(txn17.txn_id)) OVER ()) END as percentage_2017,
+	CASE WHEN sum(count(txn18.txn_id)) OVER () = 0 THEN NULL 
+	ELSE round(100*count(txn18.txn_id) / sum(count(txn18.txn_id)) OVER ()) END as percentage_2018,
+	CASE WHEN sum(count(txn19.txn_id)) OVER () = 0 THEN NULL 
+	ELSE round(100*count(txn19.txn_id) / sum(count(txn19.txn_id)) OVER ()) END as percentage_2019
+FROM anp.t_sqlt_art as ar
+
+LEFT JOIN (
+	SELECT txn_id, art_id, day_id 
+	FROM anp.t_sqlt_txn 
+	WHERE day_id BETWEEN '01-01-2017' AND '31-12-2017')
+	as txn17 ON txn17.art_id = ar.art_id
+LEFT JOIN (
+	SELECT txn_id, art_id, day_id 
+	FROM anp.t_sqlt_txn 
+	WHERE day_id BETWEEN '01-01-2018' AND '31-12-2018')
+	as txn18 ON txn18.art_id = ar.art_id
+LEFT JOIN (
+	SELECT txn_id, art_id, day_id 
+	FROM anp.t_sqlt_txn 
+	WHERE day_id BETWEEN '01-01-2019' AND '31-12-2019')
+	as txn19 ON txn19.art_id = ar.art_id
+
+GROUP BY ar.art_grp_lvl_1_name

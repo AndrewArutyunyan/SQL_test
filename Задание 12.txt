@@ -1,0 +1,35 @@
+-- Найти топ 10 наименований товаров по обороту за весь период. 
+-- Учитывать только товары из списка по условию:
+-- По товарам должны быть продажи за одну из дат (20.12.2018, 20.12.2019), 
+-- но не за обе даты одновременно.
+
+WITH top AS (
+	SELECT anp.t_sqlt_art.name as name, anp.t_sqlt_sales.art_id, anp.t_sqlt_sales.sale
+	FROM anp.t_sqlt_sales
+	JOIN anp.t_sqlt_art ON anp.t_sqlt_art.art_id = anp.t_sqlt_sales.art_id
+	ORDER BY sale DESC
+	LIMIT 10),
+
+sales_2018 AS(
+	SELECT SUM(sale_qnty) as s18, anp.t_sqlt_sales.art_id
+	FROM anp.t_sqlt_sales
+	JOIN top ON top.art_id = anp.t_sqlt_sales.art_id
+	WHERE anp.t_sqlt_sales.art_id = top.art_id 
+	AND day_id = '20.12.2018'
+	GROUP BY anp.t_sqlt_sales.art_id),
+
+sales_2019 AS(
+	SELECT SUM(sale_qnty) as s19, anp.t_sqlt_sales.art_id
+	FROM anp.t_sqlt_sales
+	JOIN top ON top.art_id = anp.t_sqlt_sales.art_id
+	WHERE anp.t_sqlt_sales.art_id = top.art_id 
+	AND day_id = '20.12.2019'
+	GROUP BY anp.t_sqlt_sales.art_id)
+	
+SELECT name
+FROM top
+LEFT JOIN sales_2018 ON sales_2018.art_id = top.art_id
+LEFT JOIN sales_2019 ON sales_2019.art_id = top.art_id
+WHERE NOT (sales_2018.s18 IS NOT NULL AND sales_2019.s19 IS NOT NULL)
+AND ((sales_2018.s18 IS NOT NULL) OR (sales_2019.s19 IS NOT NULL))
+LIMIT 10
